@@ -1,18 +1,15 @@
 # This code is based on https://github.com/Mathux/ACTOR.git
+import contextlib
+import os
+
 import numpy as np
 import torch
-
-import contextlib
-
 from smplx import SMPLLayer as _SMPLLayer
 from smplx.lbs import vertices2joints
-
 
 # action2motion_joints = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 24, 38]
 # change 0 and 8
 action2motion_joints = [8, 1, 2, 3, 4, 5, 6, 7, 0, 9, 10, 11, 12, 13, 14, 21, 24, 38]
-
-from utils.config import SMPL_MODEL_PATH, JOINT_REGRESSOR_TRAIN_EXTRA
 
 JOINTSTYPE_ROOT = {"a2m": 0, # action2motion
                    "smpl": 0,
@@ -64,14 +61,18 @@ JOINT_NAMES = [
 class SMPL(_SMPLLayer):
     """ Extension of the official SMPL implementation to support more joints """
 
-    def __init__(self, model_path=SMPL_MODEL_PATH, **kwargs):
+    def __init__(self, smpl_data_path, **kwargs):
+        smpl_kintree_path = os.path.join(smpl_data_path, "kintree_table.pkl")
+        model_path = os.path.join(smpl_data_path, "SMPL_NEUTRAL.pkl")
+        joint_regressor_train_extra = os.path.join(smpl_data_path, 'J_regressor_extra.npy')
+
         kwargs["model_path"] = model_path
 
         # remove the verbosity for the 10-shapes beta parameters
         with contextlib.redirect_stdout(None):
             super(SMPL, self).__init__(**kwargs)
             
-        J_regressor_extra = np.load(JOINT_REGRESSOR_TRAIN_EXTRA)
+        J_regressor_extra = np.load(joint_regressor_train_extra)
         self.register_buffer('J_regressor_extra', torch.tensor(J_regressor_extra, dtype=torch.float32))
         vibe_indexes = np.array([JOINT_MAP[i] for i in JOINT_NAMES])
         a2m_indexes = vibe_indexes[action2motion_joints]

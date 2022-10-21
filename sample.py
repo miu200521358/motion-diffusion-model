@@ -3,20 +3,22 @@
 Generate a large batch of image samples from a model and save them as a large
 numpy array. This can be used to produce samples for FID evaluation.
 """
-from utils.fixseed import fixseed
 import os
+import shutil
+
 import numpy as np
 import torch
-from utils.parser_util import sample_args
-from utils.model_util import create_model_and_diffusion, load_model_wo_clip
-from utils import dist_util
-from model.cfg_sampler import ClassifierFreeSampleModel
+
+import data_loaders.humanml.utils.paramUtil as paramUtil
 from data_loaders.get_data import get_dataset_loader
 from data_loaders.humanml.scripts.motion_process import recover_from_ric
-import data_loaders.humanml.utils.paramUtil as paramUtil
 from data_loaders.humanml.utils.plot_script import plot_3d_motion
-import shutil
 from data_loaders.tensors import collate
+from model.cfg_sampler import ClassifierFreeSampleModel
+from utils import dist_util
+from utils.fixseed import fixseed
+from utils.model_util import create_model_and_diffusion, load_model_wo_clip
+from utils.parser_util import sample_args
 
 
 def main():
@@ -26,7 +28,7 @@ def main():
     name = os.path.basename(os.path.dirname(args.model_path))
     niter = os.path.basename(args.model_path).replace('model', '').replace('.pt', '')
     max_frames = 196 if args.dataset in ['kit', 'humanml'] else 60
-    fps = 12.5 if args.dataset == 'kit' else 20
+    fps = 12.5 if args.dataset == 'kit' else 30
     n_frames = min(max_frames, int(args.motion_length*fps))
     is_using_data = args.input_text == '' and args.text_prompt == ''
     dist_util.setup_dist(args.device)
@@ -37,6 +39,8 @@ def main():
             out_path += '_' + args.text_prompt.replace(' ', '_').replace('.', '')
         elif args.input_text != '':
             out_path += '_' + os.path.basename(args.input_text).replace('.txt', '').replace(' ', '_').replace('.', '')
+
+    args.smpl_data_path = "C:/MMD/mmd-text-to-motion/data/motion-diffusion-model/smpl"
 
     print("Creating model and diffusion...")
     model, diffusion = create_model_and_diffusion(args)
@@ -72,9 +76,13 @@ def main():
     # If it doesn't, and you still want to sample more prompts, run this script with different seeds
     # (specify through the --seed flag)
     args.batch_size = args.num_samples  # Sampling a single batch from the testset, with exactly args.num_samples
+
+    args.datapath = "C:/MMD/mmd-text-to-motion/data/motion-diffusion-model/humanml_opt.txt"
+
     data = get_dataset_loader(name=args.dataset,
                               batch_size=args.batch_size,
                               num_frames=max_frames,
+                              datapath=args.datapath,
                               split='test',
                               hml_mode='text_only')
     data.fixed_length = n_frames

@@ -1,16 +1,16 @@
-import torch
-from torch.utils import data
-import numpy as np
-import os
-from os.path import join as pjoin
-import random
 import codecs as cs
-from tqdm import tqdm
-import spacy
+import os
+import random
+from os.path import join as pjoin
 
-from torch.utils.data._utils.collate import default_collate
-from data_loaders.humanml.utils.word_vectorizer import WordVectorizer
+import numpy as np
+import spacy
+import torch
 from data_loaders.humanml.utils.get_opt import get_opt
+from data_loaders.humanml.utils.word_vectorizer import WordVectorizer
+from torch.utils import data
+from torch.utils.data._utils.collate import default_collate
+from tqdm import tqdm
 
 # import spacy
 
@@ -726,10 +726,9 @@ class HumanML3D(data.Dataset):
         self.dataname = 't2m'
 
         # Configurations of T2M dataset and KIT dataset is almost the same
-        abs_base_path = f'.'
-        dataset_opt_path = pjoin(abs_base_path, datapath)
+        abs_base_path = os.path.dirname(datapath)
         device = None  # torch.device('cuda:4') # This param is not in use in this context
-        opt = get_opt(dataset_opt_path, device)
+        opt = get_opt(datapath, device)
         opt.meta_dir = pjoin(abs_base_path, opt.meta_dir)
         opt.motion_dir = pjoin(abs_base_path, opt.motion_dir)
         opt.text_dir = pjoin(abs_base_path, opt.text_dir)
@@ -737,7 +736,6 @@ class HumanML3D(data.Dataset):
         opt.checkpoints_dir = pjoin(abs_base_path, opt.checkpoints_dir)
         opt.data_root = pjoin(abs_base_path, opt.data_root)
         opt.save_root = pjoin(abs_base_path, opt.save_root)
-        opt.meta_dir = './dataset'
         self.opt = opt
         print('Loading dataset %s ...' % opt.dataset_name)
 

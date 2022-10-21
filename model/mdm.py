@@ -1,14 +1,14 @@
+import clip
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import clip
+
 from model.rotation2xyz import Rotation2xyz
 
 
-
 class MDM(nn.Module):
-    def __init__(self, modeltype, njoints, nfeats, num_actions, translation, pose_rep, glob, glob_rot,
+    def __init__(self, modeltype, njoints, nfeats, num_actions, translation, pose_rep, glob, glob_rot, smpl_data_path,
                  latent_dim=256, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1,
                  ablation=None, activation="gelu", legacy=False, data_rep='rot', dataset='amass', clip_dim=512,
                  arch='trans_enc', emb_trans_dec=False, clip_version=None, **kargs):
@@ -99,7 +99,7 @@ class MDM(nn.Module):
         self.output_process = OutputProcess(self.data_rep, self.input_feats, self.latent_dim, self.njoints,
                                             self.nfeats)
 
-        self.rot2xyz = Rotation2xyz(device='cpu', dataset=self.dataset)
+        self.rot2xyz = Rotation2xyz(device='cpu', smpl_data_path=smpl_data_path, dataset=self.dataset)
 
     def parameters_wo_clip(self):
         return [p for name, p in self.named_parameters() if not name.startswith('clip_model.')]

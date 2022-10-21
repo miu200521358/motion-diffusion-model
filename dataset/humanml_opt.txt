@@ -1,6 +1,6 @@
 ------------ Options -------------
 batch_size: 32
-checkpoints_dir: ./checkpoints
+checkpoints_dir: C:/MMD/mmd-text-to-motion/data/motion-diffusion-model
 dataset_name: t2m
 decomp_name: Decomp_SP001_SM001_H512
 dim_att_vec: 512
