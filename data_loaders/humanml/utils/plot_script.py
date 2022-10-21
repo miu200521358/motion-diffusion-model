@@ -4,11 +4,10 @@ from textwrap import wrap
 
 import matplotlib
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d.axes3d as p3
 import numpy as np
 from matplotlib.animation import FFMpegFileWriter, FuncAnimation
-from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 
 def list_cut_average(ll, intervals):
@@ -61,7 +60,7 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(3, 3), fps
     data = joints.copy().reshape(len(joints), -1, 3)
     fig = plt.figure(figsize=figsize)
     plt.tight_layout()
-    ax = p3.Axes3D(fig)
+    ax = Axes3D(fig)
     init()
     MINS = data.min(axis=0).min(axis=0)
     MAXS = data.max(axis=0).max(axis=0)
@@ -87,8 +86,10 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(3, 3), fps
 
     def update(index):
         #         print(index)
-        ax.lines = []
-        ax.collections = []
+        ax = Axes3D(fig)
+        init()
+        # ax.lines = []
+        # ax.collections = []
         ax.view_init(elev=120, azim=-90)
         ax.dist = 7.5
         #         ax =
@@ -119,9 +120,9 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(3, 3), fps
 
     ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False)
 
-    # writer = FFMpegFileWriter(fps=fps)
-    ani.save(save_path, fps=fps)
+    # # writer = FFMpegFileWriter(fps=fps)
+    # ani.save(save_path, fps=fps)
     # ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False, init_func=init)
-    # ani.save(save_path, writer='pillow', fps=1000 / fps)
+    ani.save(save_path, writer='pillow', fps=1000 / fps)
 
     plt.close()
